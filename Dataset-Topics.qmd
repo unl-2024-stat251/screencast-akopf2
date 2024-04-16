@@ -1,23 +1,23 @@
 ---
-author: "Your Name"
+author: "Alex Kopf"
 date: "2023-04-18"
 title: "Project Dataset and Topics"
 output: html
 categories: project
 ---
 
-[Link to dataset]()
+(https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-01-09/readme.md)
 
 Things you plan to investigate using this dataset:
 
-- Thing 1
-- Thing 2
-- Thing 3
+- Thing 1: If birth date has any correlation to the position they play
+- Thing 2: If province born has a relation to what division or conference they play in
+- Thing 3: Look to see if birth date is related to what number the players wear
 
 Stat 251 topics you plan to cover during the analysis:
 
-1. Topic 1
-2. Topic 2
-3. Topic 3
-4. Topic 4
+1. Topic 1 - Using lubridate to organize dates and analyze days of week and such 
+2. Topic 2 - joins, being able to join players to their team dataset
+3. Topic 3 - Creating plots 
+4. Topic 4 - Creating a map based on province and amount of players from there
 
