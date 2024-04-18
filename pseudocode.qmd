@@ -1,8 +1,13 @@
 ---
-author: "Your Name"
+
+---
+
+[![](images/Pseudocode1.jpg)](https://github.com/unl-2024-stat251/screencast-akopf2/blob/main/Pseudocode1.jpg)---
+author: "Alex Kopf"
 date: "2023-04-20"
 title: "Screencast Pseudocode"
 output: html
 categories: project
 ---
 
+[![](images/pseudocode2.jpg)](https://github.com/unl-2024-stat251/screencast-akopf2/blob/main/pseudocode2.jpg)
