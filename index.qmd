@@ -1,6 +1,6 @@
 ---
-author: "Your Name"
-date: "2023-05-04"
+author: "Alex Kopf"
+date: "2024-05-04"
 title: "Project: Screencast"
 output: html
 categories: project
@@ -42,4 +42,192 @@ There will be three deliverables for this project:
     - Code uploaded to github repository
 
 In lieu of the final exam, you will peer review two classmates' screencasts. 
+
+
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggrepel)
+```
+
+
+```{r}
+canada_births_1991_2022 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-09/canada_births_1991_2022.csv')
+nhl_player_births <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-09/nhl_player_births.csv')
+nhl_rosters <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-09/nhl_rosters.csv')
+nhl_teams <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-01-09/nhl_teams.csv')
+```
+Thing #1 Birthday of week relation to positions
+```{r}
+NHL_player_births <- nhl_player_births |> mutate(Day_of_week_birthday = weekdays(birth_date))
+```
+
+
+```{r}
+Cananadian_players <- NHL_player_births |> filter(birth_country == "CAN")
+```
+
+
+```{r}
+NHL_rosters <- nhl_rosters |> mutate(Day_of_week_birthday = weekdays(birth_date)) 
+```
+
+```{r}
+NHL_count <- NHL_rosters |> group_by(position_code, Day_of_week_birthday) |> summarise(count_of_pos = n())
+```
+```{r}
+ggplot() +
+  geom_point(data = NHL_count, aes(x = Day_of_week_birthday, y = count_of_pos, color = position_code)) +
+  labs(x="Day of Week Born", y="# of Players", title="# of Players by postion and day of week born", subtitle="Defense lead every day of week", caption="Source: Tidy tuesday | By Alex Kopf") +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8),
+    axis.text = element_text(size = 7),
+    axis.ticks = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank() 
+  ) 
+```
+Thing #2: Does province the player is born hve a relation towards their division they play in
+
+```{r}
+Cananadian_players
+```
+
+```{r}
+Atlantic <- c("Florida Panthers", "Boston Bruins", "Toronto Maple Leafs", "Tampa Bay Lightning", "Detroit Red Wings", "Buffalo Sabres", "Ottawa Senators", "Montréal Canadiens")
+
+Atlantic <- as.data.frame(Atlantic)
+
+ Atlantic_div <- Atlantic |> rename(full_name = "Atlantic")
+ 
+ Atlantic_division <- inner_join(Atlantic_div, nhl_teams)
+```
+
+```{r}
+Metro <- c("New York Rangers", "Carolina Hurricanes", "New York Islanders", "Washington Capitals", "Pittsburgh Penguins", "Philadelphia Flyers", "New Jersey Devils", "Columbus Blue Jackets")
+
+Metro <- as.data.frame(Metro)
+
+ Metropolitan_div <- Metro |> rename(full_name = "Metro")
+ 
+  Metropolitan_division <- inner_join( Metropolitan_div, nhl_teams)
+```
+
+```{r}
+Central <- c("Dallas Stars", "Winnipeg Jets", "Colorado Avalanche", "Nashville Predators", "St. Louis Blues", "Minnesota Wild", "Arizona Coyotes", "Chicago Blackhawks" )
+
+Central <- as.data.frame(Central)
+
+ Central_div <- Central |> rename(full_name = "Central")
+ 
+  Central_division <- inner_join( Central_div, nhl_teams)
+```
+
+```{r}
+Pacific <- c("Vancouver Canucks", "Edmonton Oilers", "Los Angeles Kings", "Vegas Golden Knights", "Calgary Flames", "Seattle Kraken", "Anaheim Ducks", "San Jose Sharks")
+
+Pacific <- as.data.frame(Pacific)
+
+Pacific_div <- Pacific |> rename(full_name = "Pacific")
+ 
+ Pacific_division <- inner_join( Pacific_div, nhl_teams)
+```
+```{r}
+PACIFIC2 <- Pacific_division |> mutate(division = "Pacific")
+CENTRAL2  <- Central_division |> mutate(division = "Central")
+METRO2 <- Metropolitan_division |> mutate(division = "Metro")
+ATLANTIC2 <- Atlantic_division |> mutate(division = "Atlantic")
+```
+
+
+```{r}
+PACnCen <- full_join(PACIFIC2, CENTRAL2) 
+METnATL <- full_join(METRO2, ATLANTIC2)
+
+NHL_teams <- full_join(PACnCen, METnATL)
+```
+
+```{r}
+CAN <- nhl_rosters |> filter(birth_country == "CAN")
+
+Full_div <- inner_join(CAN, NHL_teams)
+
+Full_div2 <- Full_div |> group_by(birth_state_province, division) |> summarise(Count_by_province = n()) |> arrange(desc(Count_by_province))
+```
+```{r}
+ggplot() +
+  geom_point(data = Full_div2, aes(x = birth_state_province, y = Count_by_province, color = division)) +
+  labs(x="Division played", y="# of Players", title="# of Players by province and division played in", caption="Source: Tidy tuesday | By Alex Kopf") + coord_flip() +
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.title = element_text(size = 8),
+    axis.text = element_text(size = 7),
+    axis.ticks = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank() 
+  ) 
+```
+Thing #3: Size of player based off of month born
+```{r}
+NHL_months <- NHL_rosters |> mutate(Birth_month = months(birth_date))
+
+CAN_months <- inner_join(CAN, NHL_months)
+```
+```{r}
+Jan <- CAN_months |> filter(Birth_month == "January")
+Feb <- CAN_months |> filter(Birth_month == "February")
+Mar <- CAN_months |> filter(Birth_month == "March")
+Apr <- CAN_months |> filter(Birth_month == "April")
+May <- CAN_months |> filter(Birth_month == "May")
+June <- CAN_months |> filter(Birth_month == "June")
+July <- CAN_months |> filter(Birth_month == "July")
+Aug <- CAN_months |> filter(Birth_month == "August")
+Sep <- CAN_months |> filter(Birth_month == "September")
+Oct <- CAN_months |> filter(Birth_month == "October")
+Nov <- CAN_months |> filter(Birth_month == "November")
+Dec <- CAN_months |> filter(Birth_month == "December")
+```
+
+```{r}
+Jan2 <- Jan |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Feb2 <- Feb |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Mar2 <- Mar |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Apr2 <- Apr |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+May2 <- May |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+June2 <- June |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+July2 <- July |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Aug2 <- Aug |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Sep2 <- Sep |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Oct2 <- Oct |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Nov2 <- Nov |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+Dec2 <- Dec |> mutate(average_height = mean(height_in_inches)) |> mutate(average_weight = mean(weight_in_pounds))
+```
+
+```{r}
+one <- full_join(Jan2, Feb2)
+two <- full_join(Mar2, Apr2)
+three <- full_join(June2, May2)
+four <- full_join(July2, Aug2)
+five <- full_join(Sep2, Oct2)
+six <- full_join(Nov2, Dec2)
+
+onetwo <- full_join(one, two)
+
+threefour <- full_join(three, four)
+
+fivesix <- full_join(five, six)
+
+almost <- full_join(onetwo, threefour)
+
+FULL_Fing_Months <- full_join(almost, fivesix)
+
+```
+```{r}
+ggplot() + geom_point(data = FULL_Fing_Months, aes(x = average_weight, y = average_height, color = Birth_month))
+```
 
